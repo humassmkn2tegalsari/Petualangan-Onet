@@ -3,7 +3,7 @@
 <head>
     <link rel="icon" type="image/png" href="favicon.png">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Petualangan Onet</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -11,13 +11,12 @@
             background: #0f172a;
             color: white;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            overflow-x: hidden;
+            overflow: hidden;
             touch-action: manipulation;
             position: relative;
-            margin: 0;
-            padding: 0;
         }
 
+        /* Latar belakang statis */
         .dynamic-bg {
             position: fixed;
             top: 0;
@@ -51,63 +50,23 @@
             to { transform: translateY(-10vh) scale(1.5); opacity: 0; }
         }
 
-        /* Container Papan yang Responsif */
-        .board-wrapper {
-            width: 100%;
-            max-width: 95vw;
-            margin: 0 auto;
-            display: flex;
-            justify-content: center;
-            overflow: hidden;
+        .bg-glow {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 700px;
+            height: 700px;
+            background: radial-gradient(circle, rgba(66, 153, 225, 0.08) 0%, transparent 70%);
+            filter: blur(60px);
+            z-index: -1;
         }
 
-        .grid-container {
-            display: grid;
-            gap: 2px;
-            margin: 0 auto;
-            perspective: 1000px;
-        }
-
-        /* Ukuran Tile menggunakan vmin agar pas di layar HP & Desktop */
-        .tile {
-            width: clamp(25px, 6vmin, 60px);
-            height: clamp(25px, 6vmin, 60px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: clamp(1rem, 3.5vmin, 2.5rem);
-            background: rgba(30, 41, 59, 0.8);
-            backdrop-filter: blur(8px);
-            border-radius: clamp(4px, 1vmin, 8px);
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            user-select: none;
-            position: relative;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .tile:hover {
-            background: rgba(51, 65, 85, 0.9);
-            transform: scale(1.05);
-            z-index: 5;
-        }
-
-        .tile.selected {
-            background: #4299e1;
-            border-color: #ebf8ff;
-            box-shadow: 0 0 15px rgba(66, 153, 225, 0.8);
-            transform: scale(1.1);
-            z-index: 10;
-        }
-
-        .tile.empty {
-            visibility: hidden;
-            pointer-events: none;
-        }
-
+        /* Animasi Berkedip Merah untuk Seluruh Tile (Kritis) */
         .tile-critical {
             animation: blink-red 0.5s infinite alternate !important;
             border-color: #ff0000 !important;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.7) !important;
         }
 
         @keyframes blink-red {
@@ -115,115 +74,176 @@
             to { background-color: rgba(220, 38, 38, 0.9); }
         }
 
+        .grid-container {
+            display: grid;
+            gap: 4px;
+            margin: 0 auto;
+            perspective: 1000px;
+        }
+        .tile {
+            aspect-ratio: 1/1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(8px);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            user-select: none;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .tile:hover {
+            background: rgba(51, 65, 85, 0.9);
+            transform: scale(1.05) translateY(-3px);
+            border-color: rgba(66, 153, 225, 0.5);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+        }
+        .tile.selected {
+            background: #4299e1;
+            border-color: #ebf8ff;
+            box-shadow: 0 0 20px rgba(66, 153, 225, 0.8);
+            transform: scale(1.08);
+        }
+        .tile.hint {
+            background: #ecc94b !important;
+            border-color: white;
+            animation: pulse 0.5s infinite alternate;
+        }
+        .tile.error {
+            animation: shake 0.4s ease-in-out;
+            border-color: #f56565;
+            background: #742a2a;
+        }
+        .tile.empty {
+            visibility: hidden;
+            pointer-events: none;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+        }
+        @keyframes pulse {
+            from { transform: scale(1); box-shadow: 0 0 0px yellow; }
+            to { transform: scale(1.1); box-shadow: 0 0 20px yellow; }
+        }
         canvas#lineCanvas {
             position: absolute;
             top: 0;
             left: 0;
             pointer-events: none;
+            z-index: 10;
+        }
+        .explosion-container {
+            position: absolute;
+            pointer-events: none;
             z-index: 20;
         }
-
-        .status-msg {
-            position: fixed;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-100px);
-            background: rgba(66, 153, 225, 0.95);
-            padding: 8px 20px;
-            border-radius: 30px;
-            font-weight: bold;
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 100;
-            white-space: nowrap;
-        }
-        .status-msg.show { transform: translateX(-50%) translateY(0); }
-
-        /* Partikel ledakan */
-        .explosion-container { position: absolute; pointer-events: none; z-index: 30; }
         .particle {
             position: absolute;
             width: var(--size);
             height: var(--size);
             border-radius: 50%;
-            animation: particleFly 0.6s ease-out forwards;
+            animation: particleFly 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
         }
         @keyframes particleFly {
-            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-            100% { transform: translate(var(--tw-x), var(--tw-y)) scale(0); opacity: 0; }
+            0% { transform: translate(-50%, -50%) scale(1.5) rotate(0deg); opacity: 1; }
+            100% { transform: translate(var(--tw-x), var(--tw-y)) scale(0) rotate(360deg); opacity: 0; }
+        }
+        .status-msg {
+            position: fixed;
+            top: 20px;
+            background: rgba(66, 153, 225, 0.95);
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-weight: bold;
+            transform: translateY(-100px);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 100;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            border: 2px solid white;
+        }
+        .status-msg.show {
+            transform: translateY(0);
+        }
+        @media (max-width: 640px) {
+            .tile { font-size: 1.2rem; }
         }
     </style>
 </head>
-<body class="flex flex-col items-center justify-start min-h-screen p-2 sm:p-4">
+<body class="flex flex-col items-center justify-center min-h-screen p-4">
 
     <div class="dynamic-bg"></div>
     <div class="floating-particles" id="particleContainer"></div>
+    <div class="bg-glow"></div>
 
-    <div id="statusMsg" class="status-msg text-sm sm:text-base">🌀 Mengacak Papan...</div>
+    <div id="statusMsg" class="status-msg">🌀 Mengacak Papan...</div>
 
-    <!-- Header Stats -->
-    <div class="w-full max-w-4xl text-center mb-2 sm:mb-4 z-10">
-        <h1 class="text-2xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-b from-blue-300 to-blue-600 drop-shadow-lg tracking-tighter uppercase">PETUALANGAN ONET</h1>
-        
-        <div class="flex flex-wrap gap-1.5 justify-center mt-2">
-            <div class="bg-blue-900/80 px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold border border-blue-400/50">LV <span id="levelDisplay">1</span></div>
-            <div class="bg-gray-800/80 px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold border border-white/10">Skor: <span id="score">0</span></div>
-            <div id="livesContainer" class="bg-pink-900/80 px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold border border-pink-400/50"><span id="livesDisplay">❤️❤️❤️</span></div>
-            <div id="timerContainer" class="bg-red-900/80 px-3 py-1 rounded-full text-[10px] sm:text-xs font-mono font-bold border border-red-500/30">⏳ <span id="timer">03:00</span></div>
-            <div class="bg-yellow-700/80 px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold cursor-pointer hover:bg-yellow-600 border border-yellow-400/30" onclick="useHint()">
-                💡 <span id="hintCount">3</span>
+    <div class="text-center mb-4 z-10">
+        <h1 class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-b from-blue-300 to-blue-600 drop-shadow-lg tracking-tighter">PETUALANGAN ONET</h1>
+        <div class="flex flex-wrap gap-2 justify-center mt-3">
+            <div class="bg-blue-900/80 px-4 py-1.5 rounded-full text-xs font-bold border border-blue-400/50 backdrop-blur-md shadow-inner">Level <span id="levelDisplay">1</span></div>
+            <div class="bg-gray-800/80 px-4 py-1.5 rounded-full text-xs font-bold border border-white/10 backdrop-blur-md">Skor: <span id="score">0</span></div>
+            <div id="livesContainer" class="bg-pink-900/80 px-4 py-1.5 rounded-full text-xs font-bold border border-pink-400/50 backdrop-blur-md">Nyawa: <span id="livesDisplay">❤️❤️❤️</span></div>
+            <div id="timerContainer" class="bg-red-900/80 px-4 py-1.5 rounded-full text-xs font-mono font-bold backdrop-blur-md border border-red-500/30">Waktu: <span id="timer">03:00</span></div>
+            <div class="bg-yellow-700/80 px-4 py-1.5 rounded-full text-xs font-bold cursor-pointer hover:bg-yellow-600 transition-all backdrop-blur-md border border-yellow-400/30" onclick="useHint()">
+                Bantuan: <span id="hintCount">3</span>
             </div>
-            <button onclick="resetToStart()" class="bg-slate-700/80 hover:bg-slate-600 px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold border border-white/5">Restart</button>
+            <button onclick="resetToStart()" class="bg-gray-600/80 hover:bg-gray-500 px-4 py-1.5 rounded-full transition-all text-xs font-bold backdrop-blur-md border border-white/5">Ulang Level 1</button>
         </div>
-        <p id="levelDesc" class="text-[10px] sm:text-xs text-blue-200 mt-2 font-medium bg-white/5 py-1 px-4 rounded-full inline-block border border-white/5"></p>
+        <p id="levelDesc" class="text-xs text-blue-200 mt-3 font-medium bg-white/5 py-1.5 px-6 rounded-full inline-block border border-white/5 backdrop-blur-sm"></p>
     </div>
 
-    <!-- Game Board Area -->
-    <div class="board-wrapper relative">
-        <div class="relative bg-white/5 p-2 sm:p-3 rounded-xl border border-white/10 backdrop-blur-md">
-            <canvas id="lineCanvas"></canvas>
-            <div id="gameBoard" class="grid-container"></div>
-        </div>
+    <div class="relative bg-white/5 p-4 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 backdrop-blur-xl">
+        <canvas id="lineCanvas"></canvas>
+        <div id="gameBoard" class="grid-container"></div>
     </div>
 
-    <!-- Modal -->
-    <div id="endModal" class="fixed inset-0 bg-slate-950/95 hidden flex items-center justify-center z-50 p-4">
-        <div class="bg-slate-900 p-6 sm:p-8 rounded-3xl text-center border border-blue-500/50 max-w-sm w-full shadow-2xl">
-            <h2 id="modalTitle" class="text-2xl sm:text-4xl font-black text-yellow-400 mb-2 sm:mb-4">Misi Berhasil!</h2>
-            <p id="modalBody" class="mb-6 sm:mb-8 text-slate-300 text-sm sm:text-base font-medium"></p>
-            <button id="modalBtn" onclick="nextLevel()" class="bg-blue-600 hover:bg-blue-500 text-white font-black py-3 px-8 rounded-xl transition-all w-full text-sm sm:text-base">LANJUTKAN</button>
+    <div id="endModal" class="fixed inset-0 bg-slate-950/90 hidden flex items-center justify-center z-50 backdrop-blur-sm">
+        <div class="bg-slate-900 p-8 rounded-3xl text-center border border-blue-500/50 max-w-sm shadow-[0_0_80px_rgba(66,153,225,0.3)]">
+            <h2 id="modalTitle" class="text-4xl font-black text-yellow-400 mb-4 tracking-tight">Misi Berhasil!</h2>
+            <p id="modalBody" class="mb-8 text-slate-300 font-medium leading-relaxed">Kamu telah membersihkan semua benda.</p>
+            <button id="modalBtn" onclick="nextLevel()" class="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-black py-3 px-8 rounded-2xl transition-all w-full shadow-lg shadow-blue-900/40">LANJUTKAN</button>
         </div>
     </div>
 
     <script>
-        // Animasi latar belakang
         function createBackgroundParticles() {
             const container = document.getElementById('particleContainer');
             if(!container) return;
             container.innerHTML = '';
-            for(let i = 0; i < 20; i++) {
+            const count = 30;
+            for(let i = 0; i < count; i++) {
                 const p = document.createElement('div');
                 p.className = 'floating-particle';
-                const size = Math.random() * 3 + 2;
-                p.style.width = `${size}px`; p.style.height = `${size}px`;
+                const size = Math.random() * 4 + 2;
+                p.style.width = `${size}px`;
+                p.style.height = `${size}px`;
                 p.style.left = `${Math.random() * 100}vw`;
-                p.style.animationDuration = `${Math.random() * 10 + 10}s`;
+                p.style.animationDuration = `${Math.random() * 15 + 15}s`;
+                p.style.animationDelay = `${Math.random() * 20}s`;
                 container.appendChild(p);
             }
         }
 
-        const emojis = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🐔', '🐧', '🐦', '🐤', '🦆', '🦅', '🦉', '🦇', '🐺', '🐗', '🐴', '🦄', '🐝', '🐛', '🦋', '🐌', '🐞', '🐜', '🦟', '🦗', '🕷', '🦂', '🐢', '🐍', '🦎', '🦖', '🐙', '🦑', '🦐', '🦞', '🦀', '🐡', '🐠', '🐟', '🐬', '🐳', '🐋', '🦈', '🐊', '🐅', '🐆', '🦓', '🐘', '🦏', '🦛', '🐪', '🐫', '🦒', '🦘', '🐃', '🐂', '🐄', '🐎', '🐖', '🐏', '🐑', '🐐', '🦌', '🐕', '🐩', '🐈', '🐓', '🦃', '🦚', '🦜', '🦢', '🦩', '🕊', '🐇', '🦝', '🦨', '🦡', '🦦', '🦥'];
+        const emojis = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🐔', '🐧', '🐦', '🐤', '🦆', '🦅', '🦉', '🦇', '🐺', '🐗', '🐴', '🦄', '🐝', '🐛', '🦋', '🐌', '🐞', '🐜', '🦟', '🦗', '🕷', '🦂', '🐢', '🐍', '🦎', '🦖', '🐙', '🦑', '🦐', '🦞', '🦀', '🐡', '🐠', '🐟', '🐬', '🐳', '🐋', '🦈', '🐊', '🐅', '🐆', '🦓', '🐘', '🦏', '🦛', '🐪', '🐫', '🦒', '🦘', '🐃', '🐂', '🐄', '🐎', '🐖', '🐏', '🐑', '🐐', '🦌', '🐕', '🐩', '🐈', '🐓', '🦃', '🦚', '🦜', '🦢', '🦩', '🕊', '🐇', '🦝', '🦨', '🦡', '🦦', '🦥', '🦮', '🐕‍🦺', '🦙'];
         
         const LEVELS = [
-            { rows: 6, cols: 6, time: 180, gravity: 'none', desc: "Level 1: Dasar" },
-            { rows: 7, cols: 8, time: 180, gravity: 'none', desc: "Level 2: Klasik" },
-            { rows: 8, cols: 10, time: 240, gravity: 'none', desc: "Level 3: Menengah" },
-            { rows: 8, cols: 10, time: 210, gravity: 'down', desc: "Level 4: Gravitasi Bawah" },
-            { rows: 8, cols: 10, time: 180, gravity: 'up', desc: "Level 5: Gravitasi Atas" },
-            { rows: 10, cols: 12, time: 300, gravity: 'none', desc: "Level 6: Papan Luas" },
-            { rows: 10, cols: 12, time: 260, gravity: 'down', desc: "Level 7: Luas + Gravitasi" },
-            { rows: 8, cols: 10, time: 100, gravity: 'none', desc: "Level 8: Kilat!" },
-            { rows: 10, cols: 14, time: 250, gravity: 'up', desc: "Level 9: Elit" },
-            { rows: 12, cols: 14, time: 300, gravity: 'down', desc: "Level 10: Master Onet" }
+            { rows: 6, cols: 8, time: 180, gravity: 'none', desc: "Latihan: Klasik" },
+            { rows: 6, cols: 10, time: 160, gravity: 'none', desc: "Sedikit lebih lebar" },
+            { rows: 8, cols: 12, time: 240, gravity: 'none', desc: "Papan standar" },
+            { rows: 8, cols: 12, time: 210, gravity: 'down', desc: "Efek Gravitasi: Jatuh ke bawah" },
+            { rows: 8, cols: 12, time: 180, gravity: 'up', desc: "Efek Gravitasi: Melayang ke atas" },
+            { rows: 10, cols: 14, time: 300, gravity: 'none', desc: "Papan Besar!" },
+            { rows: 10, cols: 14, time: 260, gravity: 'down', desc: "Papan besar dengan gravitasi" },
+            { rows: 8, cols: 12, time: 120, gravity: 'none', desc: "Serangan Kilat: Waktu terbatas!" },
+            { rows: 10, cols: 14, time: 220, gravity: 'up', desc: "Tantangan Elit" },
+            { rows: 10, cols: 16, time: 300, gravity: 'down', desc: "Level Terakhir: Master Onet" }
         ];
 
         let currentLevelIndex = 0;
@@ -243,32 +263,85 @@
         let audioCtx = null;
 
         function initAudio() {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
         }
 
         function playSound(freq, type, duration, vol) {
             if (!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = type;
-            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start();
-            osc.stop(audioCtx.currentTime + duration);
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch(e) {}
         }
 
         const sounds = {
             select: () => { initAudio(); playSound(440, 'sine', 0.1, 0.05); },
-            match: () => { initAudio(); playSound(523, 'sine', 0.2, 0.1); setTimeout(() => playSound(659, 'sine', 0.2, 0.1), 50); },
-            error: () => { initAudio(); playSound(150, 'sawtooth', 0.3, 0.05); },
-            shuffle: () => { initAudio(); playSound(800, 'triangle', 0.4, 0.05); },
+            match: () => {
+                initAudio();
+                playSound(523, 'sine', 0.3, 0.1);
+                setTimeout(() => playSound(659, 'sine', 0.3, 0.1), 50);
+            },
+            error: () => { initAudio(); playSound(110, 'sawtooth', 0.3, 0.05); },
+            shuffle: () => { initAudio(); playSound(880, 'triangle', 0.5, 0.05); },
+            hint: () => { initAudio(); playSound(880, 'sine', 0.2, 0.05); },
             win: () => { initAudio(); playSound(880, 'sine', 0.5, 0.1); },
-            lifeLost: () => { initAudio(); playSound(200, 'sawtooth', 0.5, 0.1); }
+            bomb: () => { 
+                initAudio(); 
+                playSound(2500, 'square', 0.05, 0.2); 
+            },
+            lifeLost: () => { initAudio(); playSound(220, 'sawtooth', 0.8, 0.1); }
         };
+
+        function startTimer() {
+            if(timerId) clearInterval(timerId);
+            timeLeft = LEVELS[currentLevelIndex].time;
+            updateTimerDisplay();
+            
+            timerId = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                
+                if (timeLeft <= 30 && timeLeft > 0) {
+                    sounds.bomb();
+                    document.querySelectorAll('.tile:not(.empty)').forEach(tile => {
+                        tile.classList.add('tile-critical');
+                    });
+                } else if (timeLeft > 30) {
+                    document.querySelectorAll('.tile').forEach(tile => {
+                        tile.classList.remove('tile-critical');
+                    });
+                }
+
+                if (timeLeft <= 0) {
+                    gameOver();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            document.getElementById('timer').innerText = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function updateLivesDisplay() {
+            const livesText = '❤️'.repeat(lives) + '🖤'.repeat(3 - lives);
+            document.getElementById('livesDisplay').innerText = livesText;
+        }
 
         function initGame() {
             const config = LEVELS[currentLevelIndex];
@@ -276,17 +349,15 @@
             document.getElementById('levelDisplay').innerText = currentLevelIndex + 1;
             document.getElementById('levelDesc').innerText = config.desc;
             document.getElementById('endModal').classList.add('hidden');
+            updateLivesDisplay();
             
-            // Generate board
-            const totalInnerCells = (config.rows - 2) * (config.cols - 2);
-            // Ensure even number for matching
-            const finalTiles = totalInnerCells % 2 === 0 ? totalInnerCells : totalInnerCells - 1;
-            
+            const totalTiles = (config.rows - 2) * (config.cols - 2);
             let gameEmojis = [];
-            for(let i = 0; i < finalTiles / 2; i++) {
+            for(let i = 0; i < totalTiles / 2; i++) {
                 const emoji = emojis[Math.floor(Math.random() * emojis.length)];
                 gameEmojis.push(emoji, emoji);
             }
+            
             gameEmojis.sort(() => Math.random() - 0.5);
 
             board = [];
@@ -294,16 +365,16 @@
             for(let r = 0; r < config.rows; r++) {
                 board[r] = [];
                 for(let c = 0; c < config.cols; c++) {
-                    if(r === 0 || r === config.rows - 1 || c === 0 || c === config.cols - 1 || emojiIdx >= gameEmojis.length) {
+                    if(r === 0 || r === config.rows - 1 || c === 0 || c === config.cols - 1) {
                         board[r][c] = null;
                     } else {
                         board[r][c] = gameEmojis[emojiIdx++];
                     }
                 }
             }
-            tilesRemaining = gameEmojis.length;
+            tilesRemaining = totalTiles;
             renderBoard();
-            setTimeout(resizeCanvas, 50); // Delay sedikit agar DOM siap
+            resizeCanvas();
             startTimer();
             checkAvailableMoves();
         }
@@ -314,7 +385,8 @@
             for(let r = 0; r < config.rows; r++) {
                 for(let c = 0; c < config.cols; c++) {
                     const tileDiv = document.createElement('div');
-                    tileDiv.className = `tile ${board[r][c] ? '' : 'empty'}`;
+                    const criticalClass = (timeLeft <= 30 && board[r][c]) ? 'tile-critical' : '';
+                    tileDiv.className = `tile ${board[r][c] ? '' : 'empty'} ${criticalClass}`;
                     tileDiv.dataset.r = r;
                     tileDiv.dataset.c = c;
                     tileDiv.innerText = board[r][c] || '';
@@ -327,7 +399,8 @@
         function handleTileClick(r, c) {
             initAudio();
             if (!board[r][c] || isProcessing) return;
-            
+            document.querySelectorAll('.tile.hint').forEach(t => t.classList.remove('hint'));
+
             const currentTile = document.querySelector(`[data-r="${r}"][data-c="${c}"]`);
 
             if (!firstSelected) {
@@ -353,7 +426,7 @@
                     board[firstSelected.r][firstSelected.c] = null;
                     board[r][c] = null;
                     
-                    score += 10;
+                    score += 10 + (currentLevelIndex * 2);
                     tilesRemaining -= 2;
                     document.getElementById('score').innerText = score;
 
@@ -362,20 +435,119 @@
                         renderBoard();
                         clearCanvas();
                         isProcessing = false;
-                        if(tilesRemaining === 0) winLevel();
-                        else checkAvailableMoves();
+                        if(tilesRemaining === 0) {
+                            winLevel();
+                        } else {
+                            checkAvailableMoves();
+                        }
                     }, 300);
                 } else {
                     sounds.error();
                     const prev = document.querySelector(`[data-r="${firstSelected.r}"][data-c="${firstSelected.c}"]`);
-                    currentTile.classList.add('selected');
+                    if(currentTile) currentTile.classList.add('error');
+                    if(prev) prev.classList.add('error');
+                    
                     setTimeout(() => {
-                        if(prev) prev.classList.remove('selected');
-                        currentTile.classList.remove('selected');
-                    }, 300);
+                        if(prev) {
+                            prev.classList.remove('selected');
+                            prev.classList.remove('error');
+                        }
+                        if(currentTile) currentTile.classList.remove('error');
+                    }, 400);
                 }
                 firstSelected = null;
             }
+        }
+
+        function applyGravity() {
+            const config = LEVELS[currentLevelIndex];
+            if (config.gravity === 'none') return;
+
+            for (let c = 1; c < config.cols - 1; c++) {
+                let temp = [];
+                for (let r = 1; r < config.rows - 1; r++) {
+                    if (board[r][c]) temp.push(board[r][c]);
+                }
+
+                if (config.gravity === 'down') {
+                    let idx = temp.length - 1;
+                    for (let r = config.rows - 2; r >= 1; r--) {
+                        board[r][c] = idx >= 0 ? temp[idx--] : null;
+                    }
+                } else if (config.gravity === 'up') {
+                    let idx = 0;
+                    for (let r = 1; r < config.rows - 1; r++) {
+                        board[r][c] = idx < temp.length ? temp[idx++] : null;
+                    }
+                }
+            }
+        }
+
+        function useHint() {
+            if (hintsLeft <= 0 || isProcessing) return;
+            const move = getPossibleMove();
+            if (move) {
+                hintsLeft--;
+                document.getElementById('hintCount').innerText = hintsLeft;
+                sounds.hint();
+                const t1 = document.querySelector(`[data-r="${move.r1}"][data-c="${move.c1}"]`);
+                const t2 = document.querySelector(`[data-r="${move.r2}"][data-c="${move.c2}"]`);
+                if(t1) t1.classList.add('hint');
+                if(t2) t2.classList.add('hint');
+                setTimeout(() => { 
+                    if(t1) t1.classList.remove('hint'); 
+                    if(t2) t2.classList.remove('hint'); 
+                }, 2000);
+            }
+        }
+
+        function getPossibleMove() {
+            const config = LEVELS[currentLevelIndex];
+            for (let r1 = 0; r1 < config.rows; r1++) {
+                for (let c1 = 0; c1 < config.cols; c1++) {
+                    if (!board[r1][c1]) continue;
+                    for (let r2 = 0; r2 < config.rows; r2++) {
+                        for (let c2 = 0; c2 < config.cols; c2++) {
+                            if (r1 === r2 && c1 === c2) continue;
+                            if (board[r1][c1] === board[r2][c2]) {
+                                if (findPath(r1, c1, r2, c2)) return { r1, c1, r2, c2 };
+                            }
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        function checkAvailableMoves() {
+            if (tilesRemaining === 0) return;
+            if (!getPossibleMove()) triggerShuffle();
+        }
+
+        function triggerShuffle() {
+            const msg = document.getElementById('statusMsg');
+            const config = LEVELS[currentLevelIndex];
+            if(msg) msg.classList.add('show');
+            sounds.shuffle();
+            
+            setTimeout(() => {
+                let remainingEmojis = [];
+                for(let r = 1; r < config.rows - 1; r++) {
+                    for(let c = 1; c < config.cols - 1; c++) {
+                        if (board[r][c]) remainingEmojis.push(board[r][c]);
+                    }
+                }
+                remainingEmojis.sort(() => Math.random() - 0.5);
+                let idx = 0;
+                for(let r = 1; r < config.rows - 1; r++) {
+                    for(let c = 1; c < config.cols - 1; c++) {
+                        if (board[r][c]) board[r][c] = remainingEmojis[idx++];
+                    }
+                }
+                renderBoard();
+                if(msg) msg.classList.remove('show');
+                checkAvailableMoves();
+            }, 1000);
         }
 
         function findPath(r1, c1, r2, c2) {
@@ -394,12 +566,16 @@
                     const nr = r + dr[i];
                     const nc = c + dc[i];
                     if (nr >= 0 && nr < config.rows && nc >= 0 && nc < config.cols) {
-                        if (board[nr][nc] === null || (nr === r2 && nc === c2)) {
+                        const isTarget = (nr === r2 && nc === c2);
+                        const isEmpty = (board[nr][nc] === null);
+                        if (isEmpty || isTarget) {
                             const newTurns = (dir !== -1 && dir !== i) ? turns + 1 : turns;
-                            const key = `${nr},${nc},${i}`;
-                            if (newTurns <= 2 && (!visited.has(key) || visited.get(key) > newTurns)) {
-                                visited.set(key, newTurns);
-                                queue.push({ r: nr, c: nc, dir: i, turns: newTurns, path: [...path, {r: nr, c: nc}] });
+                            if (newTurns <= 2) {
+                                const key = `${nr},${nc},${i}`;
+                                if (!visited.has(key) || visited.get(key) > newTurns) {
+                                    visited.set(key, newTurns);
+                                    queue.push({ r: nr, c: nc, dir: i, turns: newTurns, path: [...path, {r: nr, c: nc}] });
+                                }
                             }
                         }
                     }
@@ -408,189 +584,133 @@
             return null;
         }
 
-        function applyGravity() {
-            const config = LEVELS[currentLevelIndex];
-            if (config.gravity === 'none') return;
-            for (let c = 1; c < config.cols - 1; c++) {
-                let colItems = [];
-                for (let r = 1; r < config.rows - 1; r++) {
-                    if (board[r][c]) colItems.push(board[r][c]);
-                }
-                if (config.gravity === 'down') {
-                    let idx = colItems.length - 1;
-                    for (let r = config.rows - 2; r >= 1; r--) board[r][c] = idx >= 0 ? colItems[idx--] : null;
-                } else {
-                    let idx = 0;
-                    for (let r = 1; r < config.rows - 1; r++) board[r][c] = idx < colItems.length ? colItems[idx++] : null;
-                }
-            }
-        }
-
-        function startTimer() {
-            if(timerId) clearInterval(timerId);
-            timeLeft = LEVELS[currentLevelIndex].time;
-            updateTimerDisplay();
-            timerId = setInterval(() => {
-                timeLeft--;
-                updateTimerDisplay();
-                if(timeLeft <= 30) document.querySelectorAll('.tile:not(.empty)').forEach(t => t.classList.add('tile-critical'));
-                if(timeLeft <= 0) gameOver();
-            }, 1000);
-        }
-
-        function updateTimerDisplay() {
-            const m = Math.floor(timeLeft / 60);
-            const s = timeLeft % 60;
-            document.getElementById('timer').innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-        }
-
-        function useHint() {
-            if (hintsLeft <= 0 || isProcessing) return;
-            const move = getPossibleMove();
-            if (move) {
-                hintsLeft--;
-                document.getElementById('hintCount').innerText = hintsLeft;
-                const t1 = document.querySelector(`[data-r="${move.r1}"][data-c="${move.c1}"]`);
-                const t2 = document.querySelector(`[data-r="${move.r2}"][data-c="${move.c2}"]`);
-                t1.classList.add('selected'); t2.classList.add('selected');
-                setTimeout(() => { t1.classList.remove('selected'); t2.classList.remove('selected'); }, 1500);
-            }
-        }
-
-        function getPossibleMove() {
-            const config = LEVELS[currentLevelIndex];
-            for(let r1 = 0; r1 < config.rows; r1++) {
-                for(let c1 = 0; c1 < config.cols; c1++) {
-                    if(!board[r1][c1]) continue;
-                    for(let r2 = 0; r2 < config.rows; r2++) {
-                        for(let c2 = 0; c2 < config.cols; c2++) {
-                            if((r1 === r2 && c1 === c2) || board[r1][c1] !== board[r2][c2]) continue;
-                            if(findPath(r1, c1, r2, c2)) return {r1, c1, r2, c2};
-                        }
-                    }
-                }
-            }
-            return null;
-        }
-
-        function checkAvailableMoves() {
-            if (tilesRemaining > 0 && !getPossibleMove()) {
-                const msg = document.getElementById('statusMsg');
-                msg.classList.add('show');
-                sounds.shuffle();
-                setTimeout(() => {
-                    shuffleBoard();
-                    msg.classList.remove('show');
-                    checkAvailableMoves();
-                }, 1000);
-            }
-        }
-
-        function shuffleBoard() {
-            let items = [];
-            board.forEach(row => row.forEach(cell => { if(cell) items.push(cell); }));
-            items.sort(() => Math.random() - 0.5);
-            let idx = 0;
-            for(let r = 1; r < board.length - 1; r++) {
-                for(let c = 1; c < board[0].length - 1; c++) {
-                    if(board[r][c]) board[r][c] = items[idx++];
-                }
-            }
-            renderBoard();
-        }
-
         function createExplosion(r, c) {
             const tile = document.querySelector(`[data-r="${r}"][data-c="${c}"]`);
             if(!tile) return;
-            const rect = tile.getBoundingClientRect();
-            const boardRect = boardEl.getBoundingClientRect();
-            const x = rect.left - boardRect.left + rect.width / 2;
-            const y = rect.top - boardRect.top + rect.height / 2;
-            
+            const centerX = tile.offsetLeft + tile.offsetWidth / 2;
+            const centerY = tile.offsetTop + tile.offsetHeight / 2;
             const container = document.createElement('div');
             container.className = 'explosion-container';
-            container.style.left = `${x}px`; container.style.top = `${y}px`;
+            container.style.left = `${centerX}px`;
+            container.style.top = `${centerY}px`;
             boardEl.parentElement.appendChild(container);
 
-            for(let i = 0; i < 12; i++) {
-                const p = document.createElement('div');
-                p.className = 'particle';
-                p.style.backgroundColor = ['#60a5fa', '#3b82f6', '#ffffff'][Math.floor(Math.random()*3)];
-                const size = 3 + Math.random() * 4;
-                p.style.setProperty('--size', `${size}px`);
+            const colors = ['#63b3ed', '#4299e1', '#3182ce', '#bee3f8', '#ffffff'];
+            for(let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                const size = 2 + Math.random() * 6;
+                particle.style.setProperty('--size', `${size}px`);
                 const angle = Math.random() * Math.PI * 2;
-                const dist = 30 + Math.random() * 40;
-                p.style.setProperty('--tw-x', `${Math.cos(angle) * dist}px`);
-                p.style.setProperty('--tw-y', `${Math.sin(angle) * dist}px`);
-                container.appendChild(p);
+                const distance = 40 + Math.random() * 80;
+                particle.style.setProperty('--tw-x', `${Math.cos(angle) * distance}px`);
+                particle.style.setProperty('--tw-y', `${Math.sin(angle) * distance}px`);
+                particle.style.animationDelay = `${Math.random() * 0.1}s`;
+                container.appendChild(particle);
             }
-            setTimeout(() => container.remove(), 700);
+            setTimeout(() => container.remove(), 1000);
         }
 
         function drawPath(path) {
-            resizeCanvas();
+            clearCanvas();
             ctx.beginPath();
-            ctx.strokeStyle = '#60a5fa';
-            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#4299e1';
+            ctx.lineWidth = 6;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
             path.forEach((p, idx) => {
                 const t = document.querySelector(`[data-r="${p.r}"][data-c="${p.c}"]`);
-                const rect = t.getBoundingClientRect();
-                const boardRect = boardEl.getBoundingClientRect();
-                const x = rect.left - boardRect.left + rect.width / 2;
-                const y = rect.top - boardRect.top + rect.height / 2;
-                if(idx === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                if(t) {
+                    const x = t.offsetLeft + t.offsetWidth / 2;
+                    const y = t.offsetTop + t.offsetHeight / 2;
+                    if (idx === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
             });
             ctx.stroke();
+            ctx.shadowBlur = 10; ctx.shadowColor = '#4299e1'; ctx.stroke();
         }
 
         function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
-        function resizeCanvas() { 
-            canvas.width = boardEl.scrollWidth; 
-            canvas.height = boardEl.scrollHeight; 
-        }
+        function resizeCanvas() { canvas.width = boardEl.offsetWidth; canvas.height = boardEl.offsetHeight; }
 
         function winLevel() {
             clearInterval(timerId);
             sounds.win();
-            const isLast = currentLevelIndex === LEVELS.length - 1;
-            document.getElementById('modalTitle').innerText = isLast ? "JUARA SEJATI!" : "LEVEL SELESAI!";
-            document.getElementById('modalBody').innerText = `Skor: ${score} | Sisa Waktu: ${timeLeft}s`;
-            document.getElementById('modalBtn').innerText = isLast ? "MAIN LAGI" : "LANJUTKAN";
-            document.getElementById('modalBtn').onclick = isLast ? resetToStart : nextLevel;
-            document.getElementById('endModal').classList.remove('hidden');
-        }
-
-        function gameOver() {
-            clearInterval(timerId);
-            sounds.lifeLost();
-            if(lives > 1) {
-                lives--;
-                updateLivesUI();
-                document.getElementById('modalTitle').innerText = "WAKTU HABIS";
-                document.getElementById('modalBody').innerText = `Nyawa berkurang! Sisa nyawa: ${lives}`;
-                document.getElementById('modalBtn').innerText = "COBA LAGI";
-                document.getElementById('modalBtn').onclick = initGame;
+            document.querySelectorAll('.tile').forEach(t => t.classList.remove('tile-critical'));
+            
+            const isLastLevel = currentLevelIndex === LEVELS.length - 1;
+            
+            document.getElementById('modalTitle').innerText = isLastLevel ? "LEGENDARY MASTER!" : "Level Selesai!";
+            document.getElementById('modalBody').innerText = isLastLevel 
+                ? `Luar Biasa! Level 10 tamat. Skor akhir: ${score}` 
+                : `Bagus! Level ${currentLevelIndex + 1} berhasil. Skor: ${score}`;
+            
+            const btn = document.getElementById('modalBtn');
+            if (isLastLevel) {
+                btn.innerText = "MAIN LAGI";
+                btn.onclick = resetToStart;
             } else {
-                lives = 0;
-                updateLivesUI();
-                document.getElementById('modalTitle').innerText = "GAME OVER";
-                document.getElementById('modalBody').innerText = "Kamu kehabisan nyawa!";
-                document.getElementById('modalBtn').innerText = "MULAI DARI AWAL";
-                document.getElementById('modalBtn').onclick = resetToStart;
+                btn.innerText = "LANJUTKAN";
+                btn.onclick = nextLevel;
             }
             document.getElementById('endModal').classList.remove('hidden');
         }
 
-        function updateLivesUI() {
-            document.getElementById('livesDisplay').innerText = '❤️'.repeat(lives) + '🖤'.repeat(3-lives);
+        function nextLevel() {
+            currentLevelIndex++;
+            hintsLeft = 3;
+            document.getElementById('hintCount').innerText = hintsLeft;
+            initGame();
         }
 
-        function nextLevel() { currentLevelIndex++; hintsLeft = 3; document.getElementById('hintCount').innerText = 3; initGame(); }
-        function resetToStart() { currentLevelIndex = 0; score = 0; lives = 3; updateLivesUI(); document.getElementById('score').innerText = 0; nextLevel(); currentLevelIndex = 0; initGame(); }
+        function resetToStart() {
+            currentLevelIndex = 0;
+            score = 0;
+            lives = 3;
+            hintsLeft = 3;
+            document.getElementById('score').innerText = score;
+            document.getElementById('hintCount').innerText = hintsLeft;
+            initGame();
+        }
 
-        window.onload = () => { createBackgroundParticles(); initGame(); };
+        function gameOver() {
+            clearInterval(timerId);
+            isProcessing = true;
+            
+            if (lives > 0) {
+                sounds.lifeLost();
+                document.getElementById('modalTitle').innerText = "WAKTU HABIS!";
+                document.getElementById('modalTitle').style.color = "#f472b6";
+                document.getElementById('modalBody').innerText = `Sisa Nyawa: ${lives}\nIngin mengulang level ini?`;
+                
+                const btn = document.getElementById('modalBtn');
+                btn.innerText = "GUNAKAN NYAWA (ULANG)";
+                btn.onclick = () => {
+                    lives--;
+                    isProcessing = false;
+                    initGame();
+                };
+            } else {
+                document.getElementById('modalTitle').innerText = "GAME OVER";
+                document.getElementById('modalTitle').style.color = "#f87171";
+                document.getElementById('modalBody').innerText = "Kesempatan kamu sudah habis. Kembali ke Level 1?";
+                
+                const btn = document.getElementById('modalBtn');
+                btn.innerText = "ULANG DARI AWAL";
+                btn.onclick = () => {
+                    isProcessing = false;
+                    resetToStart();
+                };
+            }
+            document.getElementById('endModal').classList.remove('hidden');
+        }
+
+        window.onload = function() {
+            createBackgroundParticles();
+            initGame();
+        };
         window.onresize = resizeCanvas;
     </script>
 </body>
