@@ -4,7 +4,7 @@
     <link rel="icon" type="image/png" href="favicon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Petualangan Onet</title>
+    <title>Petualangan Onet - 10 Levels</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -16,38 +16,15 @@
             position: relative;
         }
 
-        /* Latar belakang statis */
+        /* Latar belakang statis yang ringan */
         .dynamic-bg {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: #0f172a;
+            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
             z-index: -2;
-        }
-
-        .floating-particles {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        .floating-particle {
-            position: absolute;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            animation: float 20s linear infinite;
-        }
-
-        @keyframes float {
-            from { transform: translateY(100vh) scale(0); opacity: 0; }
-            50% { opacity: 0.5; }
-            to { transform: translateY(-10vh) scale(1.5); opacity: 0; }
         }
 
         .bg-glow {
@@ -179,7 +156,6 @@
 <body class="flex flex-col items-center justify-center min-h-screen p-4">
 
     <div class="dynamic-bg"></div>
-    <div class="floating-particles" id="particleContainer"></div>
     <div class="bg-glow"></div>
 
     <div id="statusMsg" class="status-msg">🌀 Mengacak Papan...</div>
@@ -213,24 +189,6 @@
     </div>
 
     <script>
-        function createBackgroundParticles() {
-            const container = document.getElementById('particleContainer');
-            if(!container) return;
-            container.innerHTML = '';
-            const count = 30;
-            for(let i = 0; i < count; i++) {
-                const p = document.createElement('div');
-                p.className = 'floating-particle';
-                const size = Math.random() * 4 + 2;
-                p.style.width = `${size}px`;
-                p.style.height = `${size}px`;
-                p.style.left = `${Math.random() * 100}vw`;
-                p.style.animationDuration = `${Math.random() * 15 + 15}s`;
-                p.style.animationDelay = `${Math.random() * 20}s`;
-                container.appendChild(p);
-            }
-        }
-
         const emojis = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🐔', '🐧', '🐦', '🐤', '🦆', '🦅', '🦉', '🦇', '🐺', '🐗', '🐴', '🦄', '🐝', '🐛', '🦋', '🐌', '🐞', '🐜', '🦟', '🦗', '🕷', '🦂', '🐢', '🐍', '🦎', '🦖', '🐙', '🦑', '🦐', '🦞', '🦀', '🐡', '🐠', '🐟', '🐬', '🐳', '🐋', '🦈', '🐊', '🐅', '🐆', '🦓', '🐘', '🦏', '🦛', '🐪', '🐫', '🦒', '🦘', '🐃', '🐂', '🐄', '🐎', '🐖', '🐏', '🐑', '🐐', '🦌', '🐕', '🐩', '🐈', '🐓', '🦃', '🦚', '🦜', '🦢', '🦩', '🕊', '🐇', '🦝', '🦨', '🦡', '🦦', '🦥', '🦮', '🐕‍🦺', '🦙'];
         
         const LEVELS = [
@@ -708,7 +666,7 @@
         }
 
         window.onload = function() {
-            createBackgroundParticles();
+            // Animasi partikel dihapus untuk performa maksimal
             initGame();
         };
         window.onresize = resizeCanvas;
